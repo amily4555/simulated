@@ -1,0 +1,15 @@
+<div class="create-task">
+    <input type="text" name="addTask" ng-model="atk.task" />
+    <button ng-click="atk.addTask()">+</button>
+</div>
+
+<div ng-include="'views/todo.task.all.html'" class="list-box"></div>
+<div ng-include="'views/todo.task.progress.html'" class="list-box"></div>
+<div ng-include="'views/todo.task.done.html'" class="list-box"></div>
+<div ng-include="'views/todo.task.remove.html'" class="list-box"></div>
+
+
+
+
+
+

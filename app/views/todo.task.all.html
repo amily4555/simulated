@@ -1,0 +1,29 @@
+<dl>
+    <dt class="header">
+        所有任务
+
+        <input type="text" ng-model="atk.search" placeholder="搜索" />
+    </dt>
+    <dd>
+        <table>
+            <tbody ng-repeat="at in atk.all | filter:atk.search ">
+                <tr ui-sref-active="selected">
+                    <td ng-if="!$stateParams.type">
+                        <button ng-click="atk.changeStatus(at.id, 1)" ng-if="at.status == -1">-></button>
+                    </td>
+
+                    <td>
+                        <div class="title {{C.STATUS_TYPE[at.status]}}">
+                            <a ui-sref="task.type.detail({type:'all', id: at.id })">{{at.title}}</a>
+                        </div>
+                        <div class="time">{{at.updateTime | date: 'yyyy-MM-dd HH:mm' }}</div>
+                    </td>
+
+                    <td ng-if="!$stateParams.type">
+                        <button ng-click="atk.removeTask(at.id)">X</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </dd>
+</dl>

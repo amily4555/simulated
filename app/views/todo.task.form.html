@@ -1,0 +1,25 @@
+<form name="myForm" ng-submit="t.save(myForm)"  novalidate>
+    <div>
+        <table>
+            <tbody>
+                <tr>
+                    <td>title:</td>
+                    <td><input type="text" name="title" ng-model="t.title" required /></td>
+                </tr>
+                <tr>
+                    <td>des:</td>
+                    <td>
+                        <textarea name="des" ng-model="t.des" required minlength="10"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type="submit" class="btn btn-primary" ng-disabled="t.status == 0" value="确定" />
+                        <button ui-sref="task.list">取消</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</form>

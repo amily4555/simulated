@@ -1,0 +1,96 @@
+body {
+  font-size: 14px;
+  color: #333;
+  padding: 15px; }
+
+table {
+  width: 100%; }
+
+#header {
+  padding: 15px;
+  margin-bottom: 8px;
+  border: 1px solid #2b542c;
+  font-size: 22px;
+  color: #2b542c; }
+
+#mainer {
+  padding: 15px;
+  margin-bottom: 8px;
+  border: 1px solid #2b542c;
+  font-size: 0; }
+  #mainer div.create-task {
+    box-sizing: border-box;
+    padding: 15px;
+    border: 1px solid #2b542c;
+    margin-bottom: 8px;
+    font-size: 14px; }
+    #mainer div.create-task input[type="text"] {
+      width: 200px; }
+  #mainer div.list-box {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 15px;
+    border: 1px solid #2b542c;
+    width: calc(25% - 8px);
+    margin-right: 8px;
+    font-size: 14px;
+    vertical-align: top; }
+    #mainer div.list-box:last-child {
+      width: 25%;
+      margin-right: 0; }
+    #mainer div.list-box dl > dt.header {
+      font-size: 18px;
+      margin-bottom: 10px; }
+    #mainer div.list-box dl > dd table > tbody > tr > td {
+      padding: 5px 0;
+      border-top: 1px solid #dedede; }
+      #mainer div.list-box dl > dd table > tbody > tr > td:first-child {
+        width: 40px;
+        vertical-align: middle; }
+      #mainer div.list-box dl > dd table > tbody > tr > td div.title a {
+        color: orange; }
+      #mainer div.list-box dl > dd table > tbody > tr > td div.title.progress, #mainer div.list-box dl > dd table > tbody > tr > td div.title.progress a {
+        margin: 0;
+        background: transparent;
+        color: #2b669a;
+        box-shadow: none; }
+      #mainer div.list-box dl > dd table > tbody > tr > td div.title.done, #mainer div.list-box dl > dd table > tbody > tr > td div.title.done a {
+        color: #ff0000; }
+      #mainer div.list-box dl > dd table > tbody > tr > td div.title.remove, #mainer div.list-box dl > dd table > tbody > tr > td div.title.remove a {
+        color: #ccc; }
+      #mainer div.list-box dl > dd table > tbody > tr > td div.time {
+        color: #999;
+        font-size: 12px; }
+    #mainer div.list-box dl > dd table > tbody > tr.selected > td, #mainer div.list-box dl > dd table > tbody > tr:hover > td {
+      background: #f5f5f5; }
+  #mainer div.right-box {
+    display: inline-block;
+    box-sizing: border-box;
+    padding: 15px;
+    border: 1px solid #2b542c;
+    width: 75%;
+    font-size: 14px;
+    vertical-align: top; }
+    #mainer div.right-box td {
+      padding: 10px 0; }
+      #mainer div.right-box td input[type=text] {
+        width: 400px;
+        border: 1px solid #2b542c; }
+      #mainer div.right-box td textarea {
+        width: 400px;
+        height: 200px;
+        border: 1px solid #2b542c; }
+      #mainer div.right-box td:first-child {
+        vertical-align: top; }
+    #mainer div.right-box form .ng-touched.ng-invalid,
+    #mainer div.right-box form .ng-dirty.ng-invalid {
+      border: 1px solid #f0262f; }
+    #mainer div.right-box form.ng-submitted .ng-untouched.ng-invalid {
+      border: 1px solid #f0262f; }
+
+#footer {
+  padding: 15px;
+  border: 1px solid #2b542c;
+  color: #2b542c; }
+
+/*# sourceMappingURL=todo.css.map */

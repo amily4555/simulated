@@ -1,0 +1,171 @@
+$baseBorder: 1px solid #2b542c;
+$basePadding: 15px;
+$baseBottomMargin: 8px;
+
+body {
+    font-size: 14px;
+    color: #333;
+    padding: $basePadding;
+}
+
+table {
+    //table-layout: fixed;
+    width: 100%;
+}
+
+
+
+#header {
+    padding: $basePadding;
+    margin-bottom: $baseBottomMargin;
+    border: $baseBorder;
+    font-size: 22px;
+    color: #2b542c;
+}
+
+#mainer {
+    padding: $basePadding;
+    margin-bottom: $baseBottomMargin;
+    border: $baseBorder;
+
+    font-size: 0;
+
+    div.create-task {
+        box-sizing: border-box;
+        padding: $basePadding;
+        border: $baseBorder;
+        margin-bottom: $baseBottomMargin;
+        font-size: 14px;
+
+        input[type="text"] {
+            width: 200px;
+        }
+    }
+
+    div.list-box {
+        display: inline-block;
+        box-sizing: border-box;
+        padding: $basePadding;
+        border: $baseBorder;
+        width: calc(25% - 8px);
+        margin-right: 8px;
+        font-size: 14px;
+        vertical-align: top;
+
+        &:last-child {
+            width: 25%;
+            margin-right: 0;
+        }
+
+        dl {
+
+            & > dt.header {
+                font-size: 18px;
+                margin-bottom: 10px;
+            }
+
+            & > dd {
+                table > tbody > tr {
+                    & > td {
+                        padding: 5px 0;
+                        border-top: 1px solid #dedede;
+
+                        &:first-child {
+                            width: 40px;
+                            vertical-align: middle;
+                        }
+
+                        div.title {
+
+                            a {
+                                color: orange;
+                            }
+
+                            &.progress,
+                            &.progress a {
+                                margin: 0;
+                                background: transparent;
+                                color: #2b669a;
+                                box-shadow: none;
+                            }
+
+                            &.done,
+                            &.done a {
+                                color: #ff0000;
+                            }
+
+                            &.remove,
+                            &.remove a {
+                                color: #ccc;
+                            }
+                        }
+
+                        div.time {
+                            color: #999;
+                            font-size: 12px;
+                        }
+
+                    }
+
+                    &.selected > td,
+                    &:hover > td {
+                        background: #f5f5f5;
+                    }
+
+                }
+            }
+        }
+    }
+
+    div.right-box {
+        display: inline-block;
+        box-sizing: border-box;
+        padding: $basePadding;
+        border: $baseBorder;
+        width: 75%;
+        font-size: 14px;
+        vertical-align: top;
+
+        td {
+            padding: 10px 0;
+
+            input[type=text]{
+                width: 400px;
+                border: $baseBorder;
+            }
+
+            textarea {
+                width: 400px;
+                height: 200px;
+                border: $baseBorder;
+            }
+
+            &:first-child {
+                vertical-align: top;
+            }
+        }
+
+        form{
+            .ng-touched,
+            .ng-dirty {
+                &.ng-invalid {
+                    border: 1px solid #f0262f;
+                }
+            }
+
+            &.ng-submitted {
+                .ng-untouched {
+                    &.ng-invalid {
+                        border: 1px solid #f0262f;
+                    }
+                }
+            }
+        }
+    }
+}
+
+#footer {
+    padding: $basePadding;
+    border: $baseBorder;
+    color: #2b542c;
+}
