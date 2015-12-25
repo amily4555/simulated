@@ -21,3 +21,12 @@
 2. $httpProvider.interceptors 的 request 中修改 config.url 和 config.method 值
 
 3. config.url 实际值为 config.realurl,  config.method 的实际值为 config.realmethod
+
+#### v0.1.1 修改请求地址错误
+
+1. 添加本地伪接口
+
+2. 修正本地伪接口不支持delete
+
+#### v0.2 模拟http请求，返回不同的错误码
+#### v0.3 模拟http请求，随机设置响应时间

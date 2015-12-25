@@ -11,15 +11,22 @@ angular.module('todoApp.ctrl', [])
             $_.task.storage($_.task.group(res.data));
         });
 
-        $$.datastore.get({}, function(res){
+        $$.datastore.get({
+            'id': 1003,
+            '__status__': 404
+        }, function(res){
             //console.debug('$$:::::', res);
         });
 
-        $$.datastore.save({}, function(res){
+        $$.datastore.save({
+            name: 'mizi'
+        }, function(res){
             //console.debug('$$:::::', res);
         });
 
-        $$.datastore.delete({}, function(res){
+        $$.datastore.delete({
+            id: 123
+        }, function(res){
             //console.debug('$$:::::', res);
         });
 

@@ -6,9 +6,8 @@ angular.module('todoApp', [
     'todoApp.directives',
     'todoApp.resources',
     'todoApp.ctrl',
-
-
     'todoApp.services',
+
     'ngResource',
     'ngSanitize'
 ]);

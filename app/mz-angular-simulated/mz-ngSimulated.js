@@ -13,14 +13,23 @@
 
 
     angular.module('ngSimulated', ['ng'])
+        .constant('$simulatedConstant', {
+            'simulatedUrl' : '/simulated.json',
+            'version': '0.1.1',
+            'author': 'mizi lin ',
+            'company': 'AdMaster@2015'
+        })
+
         .provider('$simulatedCache', [function () {
             this.$get = ['$cacheFactory', function ($cacheFactory) {
                 return $cacheFactory('simulatedCache');
             }];
         }])
 
-        .provider('$simulated', ['$httpProvider', function ($httpProvider) {
+        .provider('$simulated', ['$httpProvider', '$simulatedConstant', function ($httpProvider, $simulatedConstant) {
             var provider = this;
+
+            console.debug($simulatedConstant);
 
             /**
              * 判断 anyVal 是否存在 !null, !undefined）
@@ -30,13 +39,33 @@
                 return any !== undefined && any !== null;
             };
 
+            /**
+             * 匹配模拟数据
+             * @param key
+             * @param method
+             */
             var mock = function (key, method) {
                 return Mock.mock(mockData[key][method]);
+            };
+
+            /**
+             * method 为 request 的时候，url添加参数
+             * @param url
+             * @param serializedParams
+             * @returns {*}
+             */
+            var buildUrl = function(url, serializedParams) {
+                if (serializedParams.length > 0) {
+                    url += ((url.indexOf('?') == -1) ? '?' : '&') + serializedParams;
+                }
+                return url;
             };
 
             this.defaults = {
                 // 是否执行数据模拟
                 simulated: false,
+                // 模拟请求地址
+                simulatedUrl: $simulatedConstant.simulatedUrl,
                 // 是否贮存数据
                 store: true,
                 // 数据贮存类型
@@ -61,7 +90,6 @@
                         return {
                             request: function (config) {
 
-
                                 /**
                                  * $http 发起请求类型
                                  *  @-1 用户通过$http, $resource主动请求
@@ -81,40 +109,48 @@
                                 config.simulated = isExist(config.simulated) ? config.simulated : config.cache ? false : true;
 
                                 /**
-                                 * 数据模拟接口，使用调用 templateCache
-                                 * 使遵从 angular $http 流程
+                                 * 若用户没有配置 simulatedUrl 模拟调用接口则数据模拟接口，使用调用 simulatedCache
+                                 * 若用户配置了 simulatedUrl 使遵从 angular $http 流程
                                  * 让用户自定义的 $httpProvider.interceptors 完全生效
-                                 * @type {*}
                                  */
 
                                 /**
-                                 * 影响用户在其他地方调用config的值
-                                 * 修正反感
+                                 * 因为使用伪接口调用，
+                                 * 影响用户在其他拦截器调用config的值
                                  * config.url = config.realurl || config.url;
+                                 * config.method = config.realmethod || config.method;
                                  */
                                 if (config.simulated) {
 
+                                    // 判断伪接口类型
+                                    // 是否使用cache来作为伪接口
+                                    var isCache = d.simulatedUrl === $simulatedConstant.simulatedUrl;
+
                                     // 存储真实请求接口值
                                     config.realurl = config.url;
-
-                                    // ng 只允许 method == 'GET || JSONP' 从缓存中获取
                                     config.realmethod = config.method;
-                                    config.url = '/simulated/store';
+                                    config.url = d.simulatedUrl;
 
-                                    // 每种method的缓存机制不太一样
-                                    switch (config.method) {
-                                        case 'GET' :
-                                        case 'JSONP' :
-                                            config.cache = config.cache || $injector.get('$templateCache');
-                                            break;
-                                        default :
+                                    if(isCache || 'DELETE' === config.realmethod){
+                                        config.cache = $injector.get('$simulatedCache');
+
+                                        // ng 只允许 method == 'GET || JSONP' 从缓存中获取
+                                        if(!('GET' === config.method || 'JSONP' === config.method)){
                                             config.method = 'GET';
-                                            config.cache = $injector.get('$simulatedCache');
-                                            break;
+                                        }
+
+                                        /**
+                                         * 模拟$http cache 读取规则
+                                         */
+                                        var url = buildUrl(config.url, config.paramSerializer(config.params));
+                                        config.cache.put(url, '');
                                     }
 
-                                    console.info('::::请求实际数据接口:::', config.realurl, config.realmethod);
 
+                                    console.group('::::请求实际数据接口:::', config.realurl, config.realmethod);
+                                    console.log('QUERY ->', config.params);
+                                    console.log('PAYLOAD ->', config.data);
+                                    console.groupEnd();
                                 }
 
                                 return config;
@@ -165,19 +201,7 @@
                         };
                     }]);
                 }
-
             };
-
-            //this.defaults.interceptors = function ($q) {
-            //    return {
-            //        request: function (config) {
-            //            console.debug('::OOOOOOooooOOOOoooO:request-1', config);
-            //            config.AA = 666666666;
-            //            return config;
-            //        }
-            //
-            //    };
-            //};
 
             this.$get = [function () {
                 return angular.noop
@@ -189,14 +213,11 @@
             console.debug($simulatedProvider.defaults);
         }])
 
-        .run(["$templateCache", "$simulatedCache", "$injector", function ($templateCache, $simulatedCache, $injector) {
+        .run(["$simulatedCache", "$simulatedConstant", function ($simulatedCache, $simulatedConstant) {
             /**
-             * 向内存中写入templateCache，用于simulated伪造$http请求
+             * 向内存中写入$simulatedCache，用于simulated伪造$http请求
              */
-            $templateCache.put('/simulated/store', {});
-            $simulatedCache.put('/simulated/store', {
-                't': +new Date()
-            });
+            $simulatedCache.put($simulatedConstant.simulatedUrl, '');
         }]);
 
 })(window, angular);

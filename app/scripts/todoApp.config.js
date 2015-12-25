@@ -11,6 +11,7 @@ angular.module('todoApp.config', ['ngSimulated'])
     .config(['$simulatedProvider', '$httpProvider', '$templateCacheProvider', function ($simulatedProvider, $httpProvider, $templateCacheProvider) {
         $simulatedProvider.defaults.maxDelay = 5000;
         $simulatedProvider.defaults.simulated = true;
+        $simulatedProvider.defaults.simulatedUrl = 'mz-angular-simulated/simulated.json';
         $simulatedProvider.defaults.$httpProvider($httpProvider, $templateCacheProvider);
 
     }])
@@ -35,49 +36,6 @@ angular.module('todoApp.config', ['ngSimulated'])
                 response: function (res) {
 
                     //console.debug('::::response-1', res);
-
-                    //$q.resolve();
-
-                    return res;
-
-                    //return $q.reject(res);
-                },
-
-                responseError: function (res) {
-                    var status = res.status;
-
-                    console.debug('::::responseError', res.status);
-
-                    return $q.reject(res);
-                }
-
-            };
-        });
-
-    }])
-
-    .config(['$httpProvider', 'C', function ($httpProvider, C) {
-        /**
-         * http 拦截器设置
-         */
-
-
-        $httpProvider.interceptors.push(function ($q) {
-
-            return {
-                request: function (config) {
-
-                    //console.debug(':::request-2', config);
-
-                    //config.url = config.url + '?t=' + + new Date();
-                    //config.url = 'dddd';
-
-                    return config;
-                },
-
-                response: function (res) {
-
-                    //console.debug('::::response-2', res);
 
                     //$q.resolve();
 
