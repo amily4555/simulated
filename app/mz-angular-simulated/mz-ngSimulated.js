@@ -76,7 +76,9 @@
                 // 最小延迟时间
                 minDelay: 50,
                 // 最大延迟时间
-                maxDelay: 3000
+                maxDelay: 3000,
+                // 是否在模拟链接接口中显示实际访问接口
+                queryShowRealurl: true
             };
 
             this.defaults.$httpProvider = function ($httpProvider) {
@@ -130,6 +132,18 @@
                                     config.realurl = config.url;
                                     config.realmethod = config.method;
                                     config.url = d.simulatedUrl;
+
+                                    // 暴露给用户设计请求接口值在 header
+                                    config.headers = config.headers || {};
+                                    config.headers['X-SIMULATED-REALURL'] = config.realurl;
+
+                                    // 暴露给用户设计请求接口值在 query params
+                                    // 可关闭该功能，避免 url 长度超过浏览器限制长度
+                                    if(d.queryShowRealurl){
+                                        config.params = config.params || {};
+                                        config.params.__realurl__ = config.realurl;
+                                    }
+
 
                                     if(isCache || 'DELETE' === config.realmethod){
                                         config.cache = $injector.get('$simulatedCache');
