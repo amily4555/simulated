@@ -11,9 +11,9 @@ angular.module('todoApp.config', ['ngSimulated'])
     .config(['$simulatedProvider', '$httpProvider', '$templateCacheProvider', function ($simulatedProvider, $httpProvider, $templateCacheProvider) {
         $simulatedProvider.defaults.maxDelay = 5000;
         $simulatedProvider.defaults.simulated = true;
+        $simulatedProvider.defaults.debugError = 100;
         $simulatedProvider.defaults.simulatedUrl = 'mz-angular-simulated/simulated.json';
         $simulatedProvider.defaults.$httpProvider($httpProvider, $templateCacheProvider);
-
     }])
 
     .config(['$httpProvider', 'C', function ($httpProvider, C) {

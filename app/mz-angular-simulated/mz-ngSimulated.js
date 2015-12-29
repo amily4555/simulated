@@ -14,7 +14,7 @@
 
     angular.module('ngSimulated', ['ng'])
         .constant('$simulatedConstant', {
-            'simulatedUrl' : '/simulated.json',
+            'simulatedUrl': '/simulated.json',
             'version': '0.1.1',
             'author': 'mizi lin ',
             'company': 'AdMaster@2015'
@@ -30,6 +30,16 @@
             var provider = this;
 
             console.debug($simulatedConstant);
+
+            var isDefined = angular.isDefined,
+                isFunction = angular.isFunction,
+                isString = angular.isString,
+                isObject = angular.isObject,
+                isArray = angular.isArray,
+                forEach = angular.forEach,
+                extend = angular.extend,
+                copy = angular.copy,
+                noop = angular.noop;
 
             /**
              * 判断 anyVal 是否存在 !null, !undefined）
@@ -54,11 +64,38 @@
              * @param serializedParams
              * @returns {*}
              */
-            var buildUrl = function(url, serializedParams) {
+            var buildUrl = function (url, serializedParams) {
                 if (serializedParams.length > 0) {
                     url += ((url.indexOf('?') == -1) ? '?' : '&') + serializedParams;
                 }
                 return url;
+            };
+
+            var createMap = function createMap() {
+                return Object.create(null);
+            };
+
+            var lowercase = function (string) {
+                return isString(string) ? string.toLowerCase() : string;
+            };
+
+            var trim = function (value) {
+                return isString(value) ? value.trim() : value;
+            };
+
+            var headersGetter = function (resHeaderObj) {
+                // 调试模式 response header
+                var headersObj = extend({
+                    "date": new Date().toString(),
+                    "server": "nginx/1.8.0",
+                    "connection": "keep-alive",
+                    "content-length": "570",
+                    "content-type": "text/html"
+                }, resHeaderObj || {});
+
+                return function (name) {
+                    return name ? headersObj[name] : headersObj;
+                };
             };
 
             this.defaults = {
@@ -78,7 +115,15 @@
                 // 最大延迟时间
                 maxDelay: 3000,
                 // 是否在模拟链接接口中显示实际访问接口
-                queryShowRealurl: true
+                queryShowRealurl: true,
+                // 是否开启随机错误
+                // 默认 0
+                // debugError: 0-100
+                debugError: 0,
+                // 默认调试错误码
+                errorCode: [404, 500, 401],
+                // 模拟配置 response headers
+                resHeaderObj: {}
             };
 
             this.defaults.$httpProvider = function ($httpProvider) {
@@ -91,7 +136,6 @@
                     $httpProvider.interceptors.push(['$q', '$injector', function ($q, $injector) {
                         return {
                             request: function (config) {
-
                                 /**
                                  * $http 发起请求类型
                                  *  @-1 用户通过$http, $resource主动请求
@@ -127,8 +171,12 @@
                                     // 判断伪接口类型
                                     // 是否使用cache来作为伪接口
                                     var isCache = d.simulatedUrl === $simulatedConstant.simulatedUrl;
+                                    var simulatedConfig,
+                                        debugError = d.debugError;
 
                                     // 存储真实请求接口值
+                                    config.params = config.params || {};
+                                    simulatedConfig = config.params.__simulated__ || {};
                                     config.realurl = config.url;
                                     config.realmethod = config.method;
                                     config.url = d.simulatedUrl;
@@ -139,17 +187,16 @@
 
                                     // 暴露给用户设计请求接口值在 query params
                                     // 可关闭该功能，避免 url 长度超过浏览器限制长度
-                                    if(d.queryShowRealurl){
-                                        config.params = config.params || {};
+                                    if (d.queryShowRealurl) {
                                         config.params.__realurl__ = config.realurl;
                                     }
 
-
-                                    if(isCache || 'DELETE' === config.realmethod){
+                                    // 模拟配置ajax url
+                                    if (isCache || 'DELETE' === config.realmethod) {
                                         config.cache = $injector.get('$simulatedCache');
 
                                         // ng 只允许 method == 'GET || JSONP' 从缓存中获取
-                                        if(!('GET' === config.method || 'JSONP' === config.method)){
+                                        if (!('GET' === config.method || 'JSONP' === config.method)) {
                                             config.method = 'GET';
                                         }
 
@@ -160,11 +207,27 @@
                                         config.cache.put(url, '');
                                     }
 
-
                                     console.group('::::请求实际数据接口:::', config.realurl, config.realmethod);
                                     console.log('QUERY ->', config.params);
                                     console.log('PAYLOAD ->', config.data);
                                     console.groupEnd();
+
+                                    //随机测试错误情况
+                                    if (d.debugError) {
+                                        var rd = Math.random(), err = d.errorCode;
+                                        if (Math.floor(rd * 1000) <= d.debugError * 10) {
+                                            var status = err[Math.floor(rd * err.length)];
+
+                                            // 模拟错误码返回数据
+                                            return $q.reject({
+                                                data: '',
+                                                config: config,
+                                                status: status,
+                                                headers: headersGetter(d.resHeaderObj),
+                                                statusText: status + ''
+                                            });
+                                        }
+                                    }
                                 }
 
                                 return config;
@@ -205,7 +268,7 @@
                                     return $q.resolve(res);
                                 }
 
-                                console.debug('::::responseError', res);
+                                console.error('::::response error::::', res);
 
                                 //return $q.resolve(res);
 
@@ -218,7 +281,7 @@
             };
 
             this.$get = [function () {
-                return angular.noop
+                return noop;
             }];
 
         }])

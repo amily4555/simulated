@@ -22,6 +22,9 @@ angular.module('todoApp.ctrl', [])
             name: 'mizi'
         }, function(res){
             //console.debug('$$:::::', res);
+        }, function (res) {
+            //console.debug(res);
+            //console.debug('oOoOOoooOOo', res.headers('date'));
         });
 
         $$.datastore.delete({
