@@ -15,6 +15,8 @@
     angular.module('ngSimulated', ['ng'])
         .constant('$simulatedConstant', {
             'simulatedUrl': '/simulated.json',
+            'minDelay': 50,
+            'maxDelay': 1000,
             'version': '0.1.1',
             'author': 'mizi lin ',
             'company': 'AdMaster@2015'
@@ -140,9 +142,9 @@
                 storeType: 'storage',
                 // 模拟 ajax 延迟时间
                 // 最小延迟时间
-                minDelay: 50,
+                minDelay: null,
                 // 最大延迟时间
-                maxDelay: 3000,
+                maxDelay: null,
                 // 是否在模拟链接接口中显示实际访问接口
                 queryShowRealurl: true,
                 // 是否开启随机错误
@@ -165,6 +167,9 @@
                     $httpProvider.interceptors.push(['$q', '$injector', function ($q, $injector) {
                         return {
                             request: function (config) {
+
+                                config.startTime = + new Date();
+
                                 /**
                                  * $http 发起请求类型
                                  *  @-1 用户通过$http, $resource主动请求
@@ -202,6 +207,9 @@
                                     var isCache = d.simulatedUrl === $simulatedConstant.simulatedUrl;
                                     var simulatedConfig,
                                         debugError = d.debugError;
+
+                                    // 一个到处都可以用到的随机数
+                                    var rd = Math.random();
 
                                     // 存储真实请求接口值
                                     config.params = config.params || {};
@@ -250,16 +258,40 @@
                                         // 模拟错误码返回数据
                                         return $q.reject(errorOpt(simulatedConfig.status, d.resHeaderObj, restReqConfig(config)));
                                     }else if (d.debugError) {
-                                        var rd = Math.random(), err = d.errorCode;
+                                        var err = d.errorCode;
                                         if (Math.floor(rd * 1000) <= d.debugError * 10) {
                                             var status = err[Math.floor(rd * err.length)];
                                             // 模拟错误码返回数据
                                             return $q.reject(errorOpt(status, d.resHeaderObj, restReqConfig(config)));
                                         }
                                     }
+
+                                    /**
+                                     * 模拟ajax，请求链接延迟时间
+                                     * minDelay 最短延迟时间
+                                     * maxDelay 最长延迟时间
+                                     */
+                                    if(d.minDelay || d.maxDelay){
+                                        d.minDelay = isExist(d.minDelay) ? d.minDelay : $simulatedConstant.minDelay;
+                                        d.maxDelay = isExist(d.maxDelay) ? d.maxDelay : $simulatedConstant.maxDelay;
+
+                                        var adjust = [Math.max(d.maxDelay, d.minDelay), Math.min(d.maxDelay, d.minDelay)];
+                                        d.maxDelay = adjust[0];
+                                        d.minDelay = adjust[1];
+
+                                        var delayTime = Math.floor(rd * d.maxDelay);
+                                        delayTime = delayTime > d.minDelay ? delayTime : d.minDelay;
+
+                                        var dfd = $q.defer();
+                                        $injector.get('$timeout')(function(){
+                                            dfd.resolve(config);
+                                        }, delayTime);
+
+                                        return dfd.promise;
+                                    }
                                 }
 
-                                return restReqConfig(config);
+                                return config;
                             },
 
                             requestError: function (config) {
@@ -280,8 +312,12 @@
 
 
                                     res.config = restResConfig(config);
-                                    console.info('::::模拟数据::::', config.method, config.url, res.data);
+
+                                    var runTime = + new Date() - config.startTime;
+                                    console.info('::::模拟数据::::', config.method, runTime, config.url, res.data);
                                 }
+
+
 
                                 return res;
                             },

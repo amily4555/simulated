@@ -42,6 +42,10 @@
 
 在 request config 中添加熟悉 __simulated__.status 手动设置单个或一组请求 自定义 error status
 
+#### v0.3.0 模拟http请求获得一定时间的延迟
+
+minDelay, maxDelay 设置最小延迟时间，和最大延迟时间
+
 
 
 

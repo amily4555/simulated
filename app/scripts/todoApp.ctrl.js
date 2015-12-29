@@ -22,7 +22,7 @@ angular.module('todoApp.ctrl', [])
 
         $$.datastore.save({
             name: 'mizi'
-        }, function(res){
+        }, function(res, headers, config){
             //console.debug('$$:::::', res);
         }, function (res) {
             //console.debug(res);
