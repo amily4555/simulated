@@ -98,6 +98,35 @@
                 };
             };
 
+            var errorOpt = function(status, resHeaderObj, config){
+                return {
+                    data: '',
+                    config: config,
+                    status: status,
+                    headers: headersGetter(resHeaderObj),
+                    statusText: status + ''
+                }
+            };
+
+            var restReqConfig = function(config){
+                config = config || {};
+                delete config.__simulated__;
+
+                return config;
+            };
+
+            var restResConfig = function(config){
+                config = config || {};
+
+                config.url = config.realurl;
+                delete config.realurl;
+
+                config.method = config.realmethod;
+                delete config.realmethod;
+
+                return config;
+            };
+
             this.defaults = {
                 // 是否执行数据模拟
                 simulated: false,
@@ -177,6 +206,7 @@
                                     // 存储真实请求接口值
                                     config.params = config.params || {};
                                     simulatedConfig = config.params.__simulated__ || {};
+
                                     config.realurl = config.url;
                                     config.realmethod = config.method;
                                     config.url = d.simulatedUrl;
@@ -212,25 +242,24 @@
                                     console.log('PAYLOAD ->', config.data);
                                     console.groupEnd();
 
-                                    //随机测试错误情况
-                                    if (d.debugError) {
+                                    /**
+                                     * 模拟请求错误（status code)）
+                                     */
+
+                                    if(simulatedConfig.status){
+                                        // 模拟错误码返回数据
+                                        return $q.reject(errorOpt(simulatedConfig.status, d.resHeaderObj, restReqConfig(config)));
+                                    }else if (d.debugError) {
                                         var rd = Math.random(), err = d.errorCode;
                                         if (Math.floor(rd * 1000) <= d.debugError * 10) {
                                             var status = err[Math.floor(rd * err.length)];
-
                                             // 模拟错误码返回数据
-                                            return $q.reject({
-                                                data: '',
-                                                config: config,
-                                                status: status,
-                                                headers: headersGetter(d.resHeaderObj),
-                                                statusText: status + ''
-                                            });
+                                            return $q.reject(errorOpt(status, d.resHeaderObj, restReqConfig(config)));
                                         }
                                     }
                                 }
 
-                                return config;
+                                return restReqConfig(config);
                             },
 
                             requestError: function (config) {
@@ -249,11 +278,8 @@
                                     method = config.realmethod || config.method;
                                     res.data = mock(url, method);
 
-                                    config.url = url;
-                                    config.method = method;
-                                    delete config.realurl;
-                                    delete config.realmethod;
 
+                                    res.config = restResConfig(config);
                                     console.info('::::模拟数据::::', config.method, config.url, res.data);
                                 }
 

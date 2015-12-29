@@ -13,7 +13,9 @@ angular.module('todoApp.ctrl', [])
 
         $$.datastore.get({
             'id': 1003,
-            '__status__': 404
+            '__simulated__': {
+                status: 408
+            }
         }, function(res){
             //console.debug('$$:::::', res);
         });
