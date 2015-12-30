@@ -9,11 +9,12 @@ angular.module('todoApp.config', ['ngSimulated'])
     })
 
     .config(['$simulatedProvider', '$httpProvider', '$templateCacheProvider', function ($simulatedProvider, $httpProvider, $templateCacheProvider) {
-        $simulatedProvider.defaults.maxDelay = 3000;
-        $simulatedProvider.defaults.minDelay = 100;
+        //$simulatedProvider.defaults.maxDelay = 3000;
+        //$simulatedProvider.defaults.minDelay = 100;
         $simulatedProvider.defaults.simulated = true;
         $simulatedProvider.defaults.debugError = 0;
-        $simulatedProvider.defaults.simulatedUrl = 'mz-angular-simulated/simulated.json';
+        $simulatedProvider.defaults.simulatedModel = 'simulatedModel';
+        $simulatedProvider.defaults.simulatedUrl = 'mzSimulated/simulated.json';
         $simulatedProvider.defaults.$httpProvider($httpProvider, $templateCacheProvider);
     }])
 

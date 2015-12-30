@@ -12,10 +12,7 @@ angular.module('todoApp.ctrl', [])
         });
 
         $$.datastore.get({
-            'id': 1003,
-            '__simulated__': {
-                status: 408
-            }
+            'id': 1003
         }, function(res){
             //console.debug('$$:::::', res);
         });

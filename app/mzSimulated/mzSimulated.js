@@ -40,6 +40,7 @@
                 isArray = angular.isArray,
                 forEach = angular.forEach,
                 extend = angular.extend,
+                merge = angular.merge,
                 copy = angular.copy,
                 noop = angular.noop;
 
@@ -55,9 +56,70 @@
              * 匹配模拟数据
              * @param key
              * @param method
+             * @param flatModel
              */
-            var mock = function (key, method) {
-                return Mock.mock(mockData[key][method]);
+            var mock = function (key, method, flatModel) {
+                var rst = Mock.mock(simulatedMock[key][method]);
+                var primaryKey = simulatedMock[key]['primaryKey'];
+                var matchObj = {};
+                if(flatModel){
+                    var data = rst.data;
+                    if(isObject(data)){
+                        matchObj = flat(data, primaryKey);
+                    }
+
+                    if(isArray(data)){
+                        forEach(data, function(data){
+                            matchObj = merge(matchObj, flat(data, primaryKey));
+                        });
+                    }
+                }
+
+                rst = merge(rst, matchObj);
+                return rst;
+            };
+
+
+
+            var flat = function(obj, primaryKey){
+                var matchObj = {}, opts, src;
+
+                forEach(obj, function(v, k){
+                    if(k === primaryKey){
+                        return false;
+                    }
+
+                    opts = flatKeyOpt(k);
+                    src = simulatedModel[opts.module];
+
+                    if(src){
+                        var __ = matchObj[opts.module] = {};
+
+                        if(matchObj.isDataArray){
+                            forEach(v.split(','), function(v){
+                                __[v] = Mock.mock(src);
+                            });
+                        }else{
+                            __[v] = Mock.mock(src);
+                        }
+                    }
+                });
+
+                return matchObj;
+            };
+
+            var flatKeyOpt = function(key){
+                var arr = /(.*?)Id(|s)$/.exec(key),
+                    flat = {};
+
+                if(!arr){
+                    return false;
+                }
+
+                flat.name = arr[1];
+                flat.isDataArray = 's' === arr[2];
+                flat.module = /((|[A-Z])[^A-Z]*)$/.exec(flat.name)[0].toLowerCase();
+                return flat;
             };
 
             /**
@@ -154,7 +216,9 @@
                 // 默认调试错误码
                 errorCode: [404, 500, 401],
                 // 模拟配置 response headers
-                resHeaderObj: {}
+                resHeaderObj: {},
+                // 是否使用扁平化数据模型
+                flatModel: true
             };
 
             this.defaults.$httpProvider = function ($httpProvider) {
@@ -308,7 +372,7 @@
 
                                     url = config.realurl || config.url;
                                     method = config.realmethod || config.method;
-                                    res.data = mock(url, method);
+                                    res.data = mock(url, method, d.flatModel);
 
 
                                     res.config = restResConfig(config);
