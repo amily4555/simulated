@@ -62,7 +62,7 @@ var simulatedModel = {
     },
 
     news: {
-        'newsId|+': 1000,
+        'newsId|+1': 1000,
         'title': '@word'
     },
 

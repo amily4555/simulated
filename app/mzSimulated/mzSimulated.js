@@ -82,7 +82,10 @@
 
 
             var flat = function(obj, primaryKey){
-                var matchObj = {}, opts, src;
+                var matchObj = {},
+                    opts,
+                    src,
+                    idKey;
 
                 forEach(obj, function(v, k){
                     if(k === primaryKey){
@@ -95,12 +98,16 @@
                     if(src){
                         var __ = matchObj[opts.module] = {};
 
+                        idKey = opts.module + 'Id';
+
                         if(matchObj.isDataArray){
                             forEach(v.split(','), function(v){
                                 __[v] = Mock.mock(src);
+                                __[v][idKey] = v;
                             });
                         }else{
                             __[v] = Mock.mock(src);
+                            __[v][idKey] = v;
                         }
                     }
                 });
