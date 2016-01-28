@@ -2,7 +2,7 @@
  * 基于 angular $resource RESTful 数据模拟
  */
 
-(function (window, angular, undefined) {
+(function(window, angular, undefined) {
     'use strict';
 
     var $simulatedMinErr = angular.$$minErr('$simulated');
@@ -22,16 +22,14 @@
             'company': 'AdMaster@2015'
         })
 
-        .provider('$simulatedCache', [function () {
-            this.$get = ['$cacheFactory', function ($cacheFactory) {
+        .provider('$simulatedCache', [function() {
+            this.$get = ['$cacheFactory', function($cacheFactory) {
                 return $cacheFactory('simulatedCache');
             }];
         }])
 
-        .provider('$simulated', ['$httpProvider', '$simulatedConstant', function ($httpProvider, $simulatedConstant) {
+        .provider('$simulated', ['$httpProvider', '$simulatedConstant', function($httpProvider, $simulatedConstant) {
             var provider = this;
-
-            console.debug($simulatedConstant);
 
             var isDefined = angular.isDefined,
                 isFunction = angular.isFunction,
@@ -48,8 +46,86 @@
              * 判断 anyVal 是否存在 !null, !undefined）
              * @param any
              */
-            var isExist = function (any) {
+            var isExist = function(any) {
                 return any !== undefined && any !== null;
+            };
+
+            /**
+             * 创建一个新的对象
+             */
+            var obj = function(key, val) {
+                var newObj = {};
+
+                if(key) {
+                    newObj[key] = val;
+                }
+
+                return newObj;
+            };
+
+            /**
+             * 将 resource 路径转为正则路径
+             * @param simulatedMockData
+             * @returns {{}}
+             */
+            var regMockData = function(simulatedMockData) {
+
+                /**
+                 * 首先判断是否出现正则冲突情况
+                 * 正则冲突: 两个不同的路径,解析出同一个路径
+                 */
+                var regMockData = {}, repeatRegPath = {};
+
+                forEach(simulatedMockData, function(o, k) {
+                    var keys = [];
+                    var regPath = pathtoRegexp(k, keys)
+                        .toString();
+                    var item = regMockData[regPath], repeatItem = repeatRegPath[regPath];
+
+                    if(!item) {
+                        o.__PATH__ = k;
+                        o.__KEYS__ = keys;
+                        regMockData[regPath] = o;
+                    } else {
+                        repeatItem = repeatItem || [obj(item.__PATH__, item)];
+                        repeatItem.push(obj(k, o));
+                        repeatRegPath[regPath] = repeatItem;
+                    }
+                });
+
+                forEach(repeatRegPath, function(o, k) {
+                    if(k) {
+                        delete regMockData[k];
+
+                        console.error('SIMULATE资源路径正则冲突', k, o);
+                    }
+                });
+
+                return regMockData;
+            };
+
+            /**
+             * 获得某个key的source值
+             * @extend regMockData
+             * @extend isExist
+             */
+            var getSource = function(key, simulatedMockData){
+                var regMock = {};
+                var source = simulatedMockData[key];
+
+                if(!isExist(source)){
+                    regMock = regMockData(simulatedMockData);
+
+                    for(var k in regMock) if(regMock.hasOwnProperty(k)){
+                        k = eval(k);
+                        if(k.test(key)){
+                            return regMock[k];
+                        }
+                    }
+
+                }
+
+                return null;
             };
 
             /**
@@ -58,54 +134,72 @@
              * @param method
              * @param flatModel
              */
-            var mock = function (key, method, flatModel) {
-                var rst = Mock.mock(simulatedMock[key][method]);
-                var primaryKey = simulatedMock[key]['primaryKey'];
-                var matchObj = {};
-                if(flatModel){
-                    var data = rst.data;
-                    if(isObject(data)){
-                        matchObj = flat(data, primaryKey);
+            var mock = function(key, method, flatModel) {
+                var rst = {};
+
+                /**
+                 * source
+                 */
+
+                // 根据路径key, 寻找匹配资源
+                // 1. 先按照实际完整地址寻找
+                // 2. 若1无结果, 则再按照正则路径寻找
+                var source = getSource(key, simulatedMockData) || {};
+                var store = source[method];
+
+                if(isExist(store)) {
+                    rst = Mock.mock(store);
+                    var primaryKey = source['primaryKey'];
+                    var matchObj = {};
+
+                    if(flatModel) {
+                        var data = rst.data;
+                        if(isObject(data)) {
+                            matchObj = flat(data, primaryKey);
+                        }
+
+                        if(isArray(data)) {
+                            forEach(data, function(data) {
+                                matchObj = merge(matchObj, flat(data, primaryKey));
+                            });
+                        }
                     }
 
-                    if(isArray(data)){
-                        forEach(data, function(data){
-                            matchObj = merge(matchObj, flat(data, primaryKey));
-                        });
-                    }
+                    rst = merge(rst, matchObj);
+
+                }else{
+                    console.error(key, '没有关于METHOD::::' + method + '的资源');
                 }
 
-                rst = merge(rst, matchObj);
                 return rst;
             };
 
 
-
-            var flat = function(obj, primaryKey){
+            var flat = function(obj, primaryKey) {
                 var matchObj = {},
                     opts,
                     src,
                     idKey;
 
-                forEach(obj, function(v, k){
-                    if(k === primaryKey){
+                forEach(obj, function(v, k) {
+                    if(k === primaryKey) {
                         return false;
                     }
 
                     opts = flatKeyOpt(k);
-                    src = simulatedModel[opts.module];
+                    src = simulatedMockModel[opts.module];
 
-                    if(src){
+                    if(src) {
                         var __ = matchObj[opts.module] = {};
 
                         idKey = opts.module + 'Id';
 
-                        if(matchObj.isDataArray){
-                            forEach(v.split(','), function(v){
+                        if(matchObj.isDataArray) {
+                            forEach(v.split(','), function(v) {
                                 __[v] = Mock.mock(src);
                                 __[v][idKey] = v;
                             });
-                        }else{
+                        } else {
                             __[v] = Mock.mock(src);
                             __[v][idKey] = v;
                         }
@@ -115,11 +209,11 @@
                 return matchObj;
             };
 
-            var flatKeyOpt = function(key){
+            var flatKeyOpt = function(key) {
                 var arr = /(.*?)Id(|s)$/.exec(key),
                     flat = {};
 
-                if(!arr){
+                if(!arr) {
                     return false;
                 }
 
@@ -135,8 +229,8 @@
              * @param serializedParams
              * @returns {*}
              */
-            var buildUrl = function (url, serializedParams) {
-                if (serializedParams.length > 0) {
+            var buildUrl = function(url, serializedParams) {
+                if(serializedParams.length > 0) {
                     url += ((url.indexOf('?') == -1) ? '?' : '&') + serializedParams;
                 }
                 return url;
@@ -146,15 +240,15 @@
                 return Object.create(null);
             };
 
-            var lowercase = function (string) {
+            var lowercase = function(string) {
                 return isString(string) ? string.toLowerCase() : string;
             };
 
-            var trim = function (value) {
+            var trim = function(value) {
                 return isString(value) ? value.trim() : value;
             };
 
-            var headersGetter = function (resHeaderObj) {
+            var headersGetter = function(resHeaderObj) {
                 // 调试模式 response header
                 var headersObj = extend({
                     "date": new Date().toString(),
@@ -164,12 +258,12 @@
                     "content-type": "text/html"
                 }, resHeaderObj || {});
 
-                return function (name) {
+                return function(name) {
                     return name ? headersObj[name] : headersObj;
                 };
             };
 
-            var errorOpt = function(status, resHeaderObj, config){
+            var errorOpt = function(status, resHeaderObj, config) {
                 return {
                     data: '',
                     config: config,
@@ -179,14 +273,14 @@
                 }
             };
 
-            var restReqConfig = function(config){
+            var restReqConfig = function(config) {
                 config = config || {};
                 delete config.__simulated__;
 
                 return config;
             };
 
-            var restResConfig = function(config){
+            var restResConfig = function(config) {
                 config = config || {};
 
                 config.url = config.realurl;
@@ -228,18 +322,18 @@
                 flatModel: true
             };
 
-            this.defaults.$httpProvider = function ($httpProvider) {
+            this.defaults.$httpProvider = function($httpProvider) {
                 var d = this;
 
-                if (d.simulated) {
+                if(d.simulated) {
 
                     console.log('开启模拟数据插件 $simulated 插件');
 
-                    $httpProvider.interceptors.push(['$q', '$injector', function ($q, $injector) {
+                    $httpProvider.interceptors.push(['$q', '$injector', function($q, $injector) {
                         return {
-                            request: function (config) {
+                            request: function(config) {
 
-                                config.startTime = + new Date();
+                                config.startTime = +new Date();
 
                                 /**
                                  * $http 发起请求类型
@@ -271,7 +365,7 @@
                                  * config.url = config.realurl || config.url;
                                  * config.method = config.realmethod || config.method;
                                  */
-                                if (config.simulated) {
+                                if(config.simulated) {
 
                                     // 判断伪接口类型
                                     // 是否使用cache来作为伪接口
@@ -296,16 +390,16 @@
 
                                     // 暴露给用户设计请求接口值在 query params
                                     // 可关闭该功能，避免 url 长度超过浏览器限制长度
-                                    if (d.queryShowRealurl) {
+                                    if(d.queryShowRealurl) {
                                         config.params.__realurl__ = config.realurl;
                                     }
 
                                     // 模拟配置ajax url
-                                    if (isCache || 'DELETE' === config.realmethod) {
+                                    if(isCache || 'DELETE' === config.realmethod) {
                                         config.cache = $injector.get('$simulatedCache');
 
                                         // ng 只允许 method == 'GET || JSONP' 从缓存中获取
-                                        if (!('GET' === config.method || 'JSONP' === config.method)) {
+                                        if(!('GET' === config.method || 'JSONP' === config.method)) {
                                             config.method = 'GET';
                                         }
 
@@ -325,12 +419,12 @@
                                      * 模拟请求错误（status code)）
                                      */
 
-                                    if(simulatedConfig.status){
+                                    if(simulatedConfig.status) {
                                         // 模拟错误码返回数据
                                         return $q.reject(errorOpt(simulatedConfig.status, d.resHeaderObj, restReqConfig(config)));
-                                    }else if (d.debugError) {
+                                    } else if(d.debugError) {
                                         var err = d.errorCode;
-                                        if (Math.floor(rd * 1000) <= d.debugError * 10) {
+                                        if(Math.floor(rd * 1000) <= d.debugError * 10) {
                                             var status = err[Math.floor(rd * err.length)];
                                             // 模拟错误码返回数据
                                             return $q.reject(errorOpt(status, d.resHeaderObj, restReqConfig(config)));
@@ -342,7 +436,7 @@
                                      * minDelay 最短延迟时间
                                      * maxDelay 最长延迟时间
                                      */
-                                    if(d.minDelay || d.maxDelay){
+                                    if(d.minDelay || d.maxDelay) {
                                         d.minDelay = isExist(d.minDelay) ? d.minDelay : $simulatedConstant.minDelay;
                                         d.maxDelay = isExist(d.maxDelay) ? d.maxDelay : $simulatedConstant.maxDelay;
 
@@ -354,7 +448,7 @@
                                         delayTime = delayTime > d.minDelay ? delayTime : d.minDelay;
 
                                         var dfd = $q.defer();
-                                        $injector.get('$timeout')(function(){
+                                        $injector.get('$timeout')(function() {
                                             dfd.resolve(config);
                                         }, delayTime);
 
@@ -365,17 +459,17 @@
                                 return config;
                             },
 
-                            requestError: function (config) {
+                            requestError: function(config) {
                                 console.debug('requestError', config);
                                 return config;
                             },
 
-                            response: function (res) {
+                            response: function(res) {
                                 var config = res.config;
                                 var method, url;
 
                                 // 只处理 config.simulated == true 的数据
-                                if (config.simulated) {
+                                if(config.simulated) {
 
                                     url = config.realurl || config.url;
                                     method = config.realmethod || config.method;
@@ -384,19 +478,18 @@
 
                                     res.config = restResConfig(config);
 
-                                    var runTime = + new Date() - config.startTime;
+                                    var runTime = +new Date() - config.startTime;
                                     console.info('::::模拟数据::::', config.method, runTime, config.url, res.data);
                                 }
-
 
 
                                 return res;
                             },
 
-                            responseError: function (res) {
+                            responseError: function(res) {
                                 var status = res.status;
 
-                                if (200 == status) {
+                                if(200 == status) {
                                     console.debug(res);
                                     return $q.resolve(res);
                                 }
@@ -413,17 +506,17 @@
                 }
             };
 
-            this.$get = [function () {
+            this.$get = [function() {
                 return noop;
             }];
 
         }])
 
-        .config(['$simulatedProvider', function ($simulatedProvider) {
+        .config(['$simulatedProvider', function($simulatedProvider) {
             console.debug($simulatedProvider.defaults);
         }])
 
-        .run(["$simulatedCache", "$simulatedConstant", function ($simulatedCache, $simulatedConstant) {
+        .run(["$simulatedCache", "$simulatedConstant", function($simulatedCache, $simulatedConstant) {
             /**
              * 向内存中写入$simulatedCache，用于simulated伪造$http请求
              */

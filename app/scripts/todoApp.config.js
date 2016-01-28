@@ -18,6 +18,20 @@ angular.module('todoApp.config', ['ngSimulated'])
         $simulatedProvider.defaults.$httpProvider($httpProvider, $templateCacheProvider);
     }])
 
+    .config(['$resourceProvider', function($resourceProvider) {
+        console.debug('::::', $resourceProvider);
+    }])
+
+    .config(['$provide', function($provide){
+        $provide.decorator('$resource', function($delegate) {
+            $delegate.reinit = function() {
+                //console.debug('oOooOOooo', this);
+            };
+
+            return $delegate;
+        });
+    }])
+
     .config(['$httpProvider', 'C', function ($httpProvider, C) {
 
         /**

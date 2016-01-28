@@ -90,16 +90,17 @@ module.exports = function (grunt) {
             options: {
                 port: 9091,
                 // Change this to '0.0.0.0' to access the server from outside.
-                hostname: 'dev.tagace.com',
+                //hostname: 'dev.tagace.com',
+                hostname: 'localhost',
                 livereload: 35731,
                 base: 'app'
             },
             livereload: {
-                options: {
-                    open: {
-                        target: 'http://dev.tagace.com/crm/index.html'
-                    }
-                }
+                //options: {
+                //    open: {
+                //        target: 'http://dev.tagace.com/crm/index.html'
+                //    }
+                //}
             }
         },
 
@@ -304,6 +305,75 @@ module.exports = function (grunt) {
                 'imagemin',
                 'svgmin'
             ]
+        },
+
+
+        mock: {
+            your_target: {
+                options: {
+                    // 在这里可以定义一些全局的选项
+                    // 比如网络延时，全局的 cookie 和 statusCode
+                    delay: 200, // 定义所有路由的延时为 200ms，可以在具体的路由中覆盖该定义
+                    cookie: {}, // 定义全局的 cookie
+                    port: 8012,
+                    // 定义路由规则
+                    route: {
+                        // API 的路径
+                        '/abc': {
+                            // GET 请求
+                            'get': {
+                                // 定义该 API 的 get 请求延时 500ms，覆盖全局中的定义
+                                delay: 500,
+                                // 这里定义的 cookie 将与全局 cookie 进行合并，返回合并后的 cookie
+                                cookie: {
+                                    // cookie 键值
+                                    id: 123,
+                                    username: 'bubkoo',
+                                    // cookie 选项，该选项将应用于以上的 cookie
+                                    options:{
+                                        // cookie 的有效期，这里是一小时
+                                        maxAge: 1000 * 60 * 60
+                                    }
+                                },
+                                // 返回的数据
+                                data: {
+                                    code: 200,
+                                    username: 'bubkoo',
+                                    email: 'bubkoo@163.com'
+                                }
+                            },
+
+                            // POST 请求
+                            'post': {
+                                // 对于该路由的 post 请求，采用全局选项中的设置
+
+                                // 在 data 中使用数据模板
+                                data:{
+                                    'count|100': 100,
+                                    'pageIndex|0-10': 100,
+                                    'items|0-30': [
+                                        {
+                                            'username': '@name',
+                                            'email': '@email',
+                                            'gender': '@bool',
+                                            'age|18-99': 100
+                                        }
+                                    ]
+                                }
+                            },
+
+                            // DELETE 请求
+                            'delete': {
+                                // 这里定义 statusCode 为 403，访问该路由时直接返回 403 状态码
+                                statusCode: 403
+                            }
+                            // 其他未定义的谓词都将返回 404
+                        }
+
+                        // 其他未定义的路由都将返回 404
+                    }
+                }
+            }
         }
     });
 

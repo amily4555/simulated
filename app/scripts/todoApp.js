@@ -1,5 +1,5 @@
 angular.module('todoApp', [
-
+    'ngResource',
     'todoApp.config',
     'todoApp.router',
     'todoApp.filters',
@@ -8,6 +8,6 @@ angular.module('todoApp', [
     'todoApp.ctrl',
     'todoApp.services',
 
-    'ngResource',
+
     'ngSanitize'
 ]);

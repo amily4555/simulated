@@ -11,26 +11,47 @@ angular.module('todoApp.ctrl', [])
             $_.task.storage($_.task.group(res.data));
         });
 
-        $$.datastore.get({
-            'id': 1003
-        }, function(res){
-            //console.debug('$$:::::', res);
+        //$$.user.geter({
+        //    'id': 1008
+        //}, function(res){
+        //    //console.debug('$$:::::', res);
+        //});
+
+        $$.company.get({
+            companyId: 1009,
+            recordId: 'X100876'
         });
 
-        $$.datastore.save({
-            name: 'mizi'
-        }, function(res, headers, config){
-            //console.debug('$$:::::', res);
-        }, function (res) {
-            //console.debug(res);
-            //console.debug('oOoOOoooOOo', res.headers('date'));
-        });
+        //$$.datastore.get({
+        //    'id': 1003
+        //}, function(res){
+        //    //console.debug('$$:::::', res);
+        //});
+        //
+        //
+        //
+        //$$.datastore.save({
+        //    name: 'mizi'
+        //}, function(res, headers, config){
+        //    //console.debug('$$:::::', res);
+        //}, function (res) {
+        //    //console.debug(res);
+        //    //console.debug('oOoOOoooOOo', res.headers('date'));
+        //});
+        //
+        //$$.datastore.delete({
+        //    id: 123
+        //}, function(res){
+        //    //console.debug('$$:::::', res);
+        //});
 
-        $$.datastore.delete({
-            id: 123
-        }, function(res){
-            //console.debug('$$:::::', res);
-        });
+        //$$.company.get({
+        //    'companyId': 2,
+        //    'recordId': 8,
+        //    'id': 'def'
+        //}, function(res){
+        //    //console.debug('$$:::::', res);
+        //});
 
 
 

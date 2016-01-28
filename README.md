@@ -51,3 +51,11 @@ minDelay, maxDelay 设置最小延迟时间，和最大延迟时间
 1. 数据可以按照模块进行数据模拟
 
 2. 扁平化数据原型
+
+##### v0.5.0 模拟数据可以按照resource restful 路径方式进行配置
+
+1. 完全支持 angular resource restful path
+
+2. 匹配规则, 先完全匹配全路径, 若匹配路径匹配不到, 再匹配 restful path
+
+

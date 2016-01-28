@@ -18,4 +18,4 @@ Mock && Random && (function(sm, Mock, Random){
         }
     });
 
-})(simulatedModel, Mock, Random);
+})(simulatedMockModel, Mock, Random);
