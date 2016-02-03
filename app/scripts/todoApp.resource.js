@@ -35,7 +35,6 @@ angular.module('todoApp.resources', [])
                         return request;
                     },
 
-
                     interceptor: {
                         request: function(config){
                             console.debug(':::::::::', config);
@@ -49,8 +48,9 @@ angular.module('todoApp.resources', [])
             }),
 
             'company': $resource('/v1/companys/:companyId/records/:recordId', {
+            //'company': $resource('/v1/companys/:companyId/', {
                 companyId: '1003',
-                recordId: '@id'
+                recordId: '@recordId'
             }),
 
             'test': $resource('/v1/test/:type/records/:recordId/comments/:commentId')

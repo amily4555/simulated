@@ -64,6 +64,18 @@
             };
 
             /**
+             * 浅拷贝数组或对象
+             */
+            var clone = function(obj){
+                var rst = isArray(obj) ? [] : {};
+                forEach(obj, function(v, k){
+                    rst[k] = v;
+                });
+                return rst;
+            };
+
+
+            /**
              * 将 resource 路径转为正则路径
              * @param simulatedMockData
              * @returns {{}}
@@ -83,21 +95,26 @@
                     var item = regMockData[regPath], repeatItem = repeatRegPath[regPath];
 
                     if(!item) {
-                        o.__PATH__ = k;
-                        o.__KEYS__ = keys;
+                        o.__SIMULATED_PATH__ = k;
+                        o.__SIMULATED_PARAMS__ = [];
+
+                        forEach(keys, function(oo){
+                            o.__SIMULATED_PARAMS__.push(obj('key', oo.name));
+                        });
+
                         regMockData[regPath] = o;
                     } else {
-                        repeatItem = repeatItem || [obj(item.__PATH__, item)];
+                        repeatItem = repeatItem || [obj(item.__SIMULATED_PATH__, item)];
                         repeatItem.push(obj(k, o));
                         repeatRegPath[regPath] = repeatItem;
                     }
                 });
 
+                // 提示正则冲突
                 forEach(repeatRegPath, function(o, k) {
                     if(k) {
+                        console.error('SIMULATE资源路径正则冲突', k, clone(o));
                         delete regMockData[k];
-
-                        console.error('SIMULATE资源路径正则冲突', k, o);
                     }
                 });
 
@@ -113,16 +130,19 @@
                 var regMock = {};
                 var source = simulatedMockData[key];
 
+
                 if(!isExist(source)){
                     regMock = regMockData(simulatedMockData);
 
+                    console.info(regMock);
+
                     for(var k in regMock) if(regMock.hasOwnProperty(k)){
                         k = eval(k);
-                        if(k.test(key)){
+                        var execRst = k.exec(key);
+                        if(execRst){
                             return regMock[k];
                         }
                     }
-
                 }
 
                 return null;
@@ -144,7 +164,13 @@
                 // 根据路径key, 寻找匹配资源
                 // 1. 先按照实际完整地址寻找
                 // 2. 若1无结果, 则再按照正则路径寻找
-                var source = getSource(key, simulatedMockData) || {};
+                var source = getSource(key, simulatedMockData);
+
+                if(!source){
+                    console.error(key, '没有资源');
+                    return rst;
+                }
+
                 var store = source[method];
 
                 if(isExist(store)) {
@@ -175,40 +201,11 @@
             };
 
 
-            var flat = function(obj, primaryKey) {
-                var matchObj = {},
-                    opts,
-                    src,
-                    idKey;
-
-                forEach(obj, function(v, k) {
-                    if(k === primaryKey) {
-                        return false;
-                    }
-
-                    opts = flatKeyOpt(k);
-                    src = simulatedMockModel[opts.module];
-
-                    if(src) {
-                        var __ = matchObj[opts.module] = {};
-
-                        idKey = opts.module + 'Id';
-
-                        if(matchObj.isDataArray) {
-                            forEach(v.split(','), function(v) {
-                                __[v] = Mock.mock(src);
-                                __[v][idKey] = v;
-                            });
-                        } else {
-                            __[v] = Mock.mock(src);
-                            __[v][idKey] = v;
-                        }
-                    }
-                });
-
-                return matchObj;
-            };
-
+            /**
+             * 扁平化数据, 关联KEY处理
+             * @param key
+             * @returns {*}
+             */
             var flatKeyOpt = function(key) {
                 var arr = /(.*?)Id(|s)$/.exec(key),
                     flat = {};
@@ -222,6 +219,50 @@
                 flat.module = /((|[A-Z])[^A-Z]*)$/.exec(flat.name)[0].toLowerCase();
                 return flat;
             };
+
+
+            var flat = function(obj, primaryKey) {
+                var matchObj = {},
+                    opts,
+                    src,
+                    idKey;
+
+                forEach(obj, function(v, k) {
+                    if(k === primaryKey) {
+                        return false;
+                    }
+
+                    opts = flatKeyOpt(k);
+
+                    if(opts){
+
+                        src = simulatedMockModel[opts.module];
+
+                        if(src) {
+                            var __ = matchObj[opts.module] = {};
+
+                            idKey = opts.module + 'Id';
+
+                            if(matchObj.isDataArray) {
+                                forEach(v.split(','), function(v) {
+                                    __[v] = Mock.mock(src);
+                                    __[v][idKey] = v;
+                                });
+                            } else {
+                                __[v] = Mock.mock(src);
+                                __[v][idKey] = v;
+                            }
+                        }
+
+                    }
+
+
+                });
+
+                return matchObj;
+            };
+
+
 
             /**
              * method 为 request 的时候，url添加参数

@@ -4,12 +4,12 @@ angular.module('todoApp.ctrl', [])
 
         var allTask = $_.storage('all');
 
-        allTask ? $_.task.storage($_.task.group(allTask)) : $$.datastore.get({}, function(res){
-            // 存储全部 Task
-            $_.storage('all', res.data);
-            // 分组存储各类Task
-            $_.task.storage($_.task.group(res.data));
-        });
+        //allTask ? $_.task.storage($_.task.group(allTask)) : $$.datastore.get({}, function(res){
+        //    // 存储全部 Task
+        //    $_.storage('all', res.data);
+        //    // 分组存储各类Task
+        //    $_.task.storage($_.task.group(res.data));
+        //});
 
         //$$.user.geter({
         //    'id': 1008
@@ -17,10 +17,21 @@ angular.module('todoApp.ctrl', [])
         //    //console.debug('$$:::::', res);
         //});
 
-        $$.company.get({
+        $$.company.save({
             companyId: 1009,
             recordId: 'X100876'
+        },{
+            companyId: 2,
+            recordId: 'MMMMM'
         });
+
+        //$$.company.save({
+        //    companyId: 666
+        //}, {
+        //    a:1, b:2
+        //});
+
+        //$injector.get('$http').jsonp('https://angularjs.org/greet.php?callback=JSON_CALLBACK');
 
         //$$.datastore.get({
         //    'id': 1003
